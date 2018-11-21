@@ -247,4 +247,5 @@ $mod_strings = array (
   'LBL_EXPORT_PHONE_MOBILE' => 'Móvil',
   'LBL_CONTACT_HISTORY_SUBPANEL_TITLE' => 'Emails de contactos relacionados',
   'LBL_USER_SYNC' => 'Sincronizar Usuario',
+  'LBL_LOCATION' => 'Ubicación',
 );
