@@ -248,4 +248,5 @@ $mod_strings = array (
   'LBL_CONTACT_HISTORY_SUBPANEL_TITLE' => 'Emails de contactos relacionados',
   'LBL_USER_SYNC' => 'Sincronizar Usuario',
   'LBL_LOCATION' => 'Ubicación',
+  'LBL_CONTACTSMAP' => 'Ubicación',
 );
