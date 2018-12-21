@@ -15,7 +15,7 @@ custom/modules/*/Ext/
 modules/AOD_Index/Index/*
 install/status.json
 # Custom configuration should also be ignored.
-# /config.php
+/config.php
 # Connector configuration should also be ignored.
 custom/modules/Connectors/connectors/sources/ext/*/*/config.php
 # Logs files can safely be ignored.
