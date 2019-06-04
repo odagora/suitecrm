@@ -41,7 +41,12 @@ else {
 }
 
 // //Prepare file for upload
-$dropboxFile = new DropboxFile(__DIR__ . "/db_backup.sql");
+if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)){
+    $dropboxFile = new DropboxFile(__DIR__ . "/db_backup.sql.gz");
+}
+else {
+    $dropboxFile = new DropboxFile(__DIR__ . "/db_backup.sql");
+}
 $dt = (new DateTime()) -> format("Y-m-d_H-i_s");
 
 try{
