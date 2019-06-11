@@ -1,0 +1,5 @@
+cache/jsLanguage/Emails/es_es.js chmod 755
+/themes chmod 755
+/themes/SuiteR chmod 755
+/themes/SuiteR/css chmod 755
+/themes/SuiteR/css/colourSelector.php chmod 755
