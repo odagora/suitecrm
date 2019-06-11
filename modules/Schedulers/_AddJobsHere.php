@@ -158,7 +158,7 @@ function pollMonitoredInboxes() {
 							$uid = imap_uid($ieX->conn, $msgNo);
 						} // else
 						if ($isGroupFolderExists) {
-							if ($ieX->importOneEmail($msgNo, $uid, false, true, $isGroupFolderExists)) {
+							if ($ieX->importOneEmail($msgNo, $uid)) {
 								// add to folder
 								$sugarFolder->addBean($ieX->email);
 								if ($ieX->isPop3Protocol()) {

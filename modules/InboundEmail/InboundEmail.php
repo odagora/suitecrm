@@ -3056,7 +3056,8 @@ class InboundEmail extends SugarBean {
 	 */
 	function getMessageTextFromSingleMimePart($msgNo,$section,$structure)
 	{
-	    $msgPartTmp = imap_fetchbody($this->conn, $msgNo, $section);
+		#$msgPartTmp = imap_fetchbody($this->conn, $msgNo, $section);
+		$msgPartTmp = imap_fetchbody($this->conn, $msgNo, $section, FT_PEEK);
 	    $enc = $this->getEncodingFromBreadCrumb($section, $structure->parts);
 	    $charset = $this->getCharsetFromBreadCrumb($section, $structure->parts);
 	    $msgPartTmp = $this->handleTranserEncoding($msgPartTmp, $enc);
@@ -3145,7 +3146,8 @@ class InboundEmail extends SugarBean {
 			$decodedHeader = $this->decodeHeader($fullHeader);
 
 			// now get actual body contents
-			$text = imap_body($this->conn, $msgNo);
+			#$text = imap_body($this->conn, $msgNo);
+			$text = imap_body($this->conn, $msgNo, FT_PEEK);
 
 			$upperCaseKeyDecodeHeader = array();
 			if (is_array($decodedHeader)) {
@@ -3906,9 +3908,8 @@ class InboundEmail extends SugarBean {
 	 * @param int msgNo
 	 * @param bool forDisplay
 	 * @param clean_email boolean, default true,
-	 * @param bool isGroupFolderExists
 	 */
-	function importOneEmail($msgNo, $uid, $forDisplay=false, $clean_email=true, $isGroupFolderExists = false) {
+	function importOneEmail($msgNo, $uid, $forDisplay=false, $clean_email=true) {
 		$GLOBALS['log']->debug("InboundEmail processing 1 email {$msgNo}-----------------------------------------------------------------------------------------");
 		global $timedate;
 		global $app_strings;
@@ -4147,15 +4148,15 @@ class InboundEmail extends SugarBean {
 		///////////////////////////////////////////////////////////////////////
 		////	DEAL WITH THE MAILBOX
 		if(!$forDisplay) {
-			$r = imap_setflag_full($this->conn, $msgNo, '\\SEEN');
-			if (!$isGroupFolderExists)
-            {
-                $r = imap_setflag_full($this->conn, $msgNo, '\\SEEN');
-            }
-            else
-            {
-                $r = imap_clearflag_full($this->conn, $msgNo, '\\SEEN');
-            }
+			#$r = imap_setflag_full($this->conn, $msgNo, '\\SEEN');
+			// if (!$isGroupFolderExists)
+            // {
+            //     $r = imap_setflag_full($this->conn, $msgNo, '\\SEEN');
+            // }
+            // else
+            // {
+            //     $r = imap_clearflag_full($this->conn, $msgNo, '\\SEEN');
+            // }
 
 			// if delete_seen, mark msg as deleted
 			if($this->delete_seen == 1  && !$forDisplay) {
