@@ -1,5 +1,13 @@
-cache/jsLanguage/Emails/es_es.js chmod 755
-/themes chmod 755
-/themes/SuiteR chmod 755
-/themes/SuiteR/css chmod 755
-/themes/SuiteR/css/colourSelector.php chmod 755
+chmod -R 755 cache/jsLanguage/Emails/es_es.js
+chmod -R 755 cache/jsLanguage/AOW_WorkFlow/
+chmod -R 755 cache/jsLanguage/AOW_Actions/
+chmod -R 755 cache/jsLanguage/AOW_Conditions/
+chmod -R 755 cache/jsLanguage/AOW_WorkFlow/es_es.js
+chmod -R 755 cache/jsLanguage/AOW_Actions/es_es.js
+chmod -R 755 cache/jsLanguage/AOW_Conditions/es_es.js
+chmod -R 755 cache/jsLanguage/Opportunities/es_es.js
+chmod -R 755 cache/jsLanguage/Contacts/es_es.js
+chmod -R 755 /themes
+chmod -R 755 /themes/SuiteR
+chmod -R 755 /themes/SuiteR/css
+chmod -R 755 /themes/SuiteR/css/colourSelector.php
