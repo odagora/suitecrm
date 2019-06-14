@@ -41,6 +41,7 @@
 
 *}
 
+{* REMINDERS_DISABLED - prevents duplicate display on the detail view *}
 {if $remindersDisabled == 'false' || !$remindersDisabled}
 	{assign var=REMINDERS_DISABLED value=false}
 {else}
@@ -216,14 +217,32 @@
 </div>
 
 
-{if !$REMINDERS_DISABLED}
-{literal}
-<script type="text/javascript">
+{if $remindersDataJson && $remindersDefaultValuesDataJson && $remindersDisabled}
 
-	$(function(){
-		Reminders.init({/literal}{$remindersDataJson}, {$remindersDefaultValuesDataJson}, {$remindersDisabled}{literal});
-	});
+	{if !$REMINDERS_DISABLED}
+	{literal}
+	<script type="text/javascript">
 
-</script>
-{/literal}
+		$(function(){
+			Reminders.loadDefaultsAndInit({/literal}{$remindersDataJson}, {$remindersDefaultValuesDataJson}, {$remindersDisabled}{literal}, '{/literal}{$module}{literal}', [{'personModule':'{/literal}{$returnModule}{literal}', 'personModuleId':'{/literal}{$returnId}{literal}'}], '{/literal}{$returnAction}{literal}');
+		});
+
+	</script>
+	{/literal}
+	{/if}
+
+{else}
+
+	{if !$REMINDERS_DISABLED}
+	{literal}
+	<script type="text/javascript">
+
+		$(function(){
+			Reminders.loadDefaultsAndInit(null, null, null, '{/literal}{$module}{literal}', [{'personModule': '{/literal}{$current_user->module_dir}{literal}', 'personModuleId':'{/literal}{$current_user->id}{literal}', 'personName':'{/literal}{$current_user->name}{literal}'}, {'personModule':'{/literal}{$returnModule}{literal}', 'personModuleId':'{/literal}{$returnId}{literal}'}], '{/literal}{$returnAction}{literal}');
+		});
+
+	</script>
+	{/literal}
+	{/if}
+
 {/if}

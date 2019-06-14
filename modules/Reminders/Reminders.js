@@ -58,26 +58,62 @@ var Reminders = {
 
     addDefaultReminderInterval: null,
 
+    defaultInvitees: [],
+
     getInviteeView: function(id, module, moduleId, relatedValue) {
         if(!id) id = '';
         // TODO: add a template for this
         if(!Reminders.disabled) {
-            var inviteeView = '<!-- enabled --><li class="invitees_item"><button class="invitee_btn" data-invitee-id="' + id + '" data-id="' + moduleId + '" data-module="' + module + '" onclick="Reminders.onInviteeClick(this);"><img src=index.php?entryPoint=getImage&themeName=SuiteR&imageName=' + module + '.gif"><span class="related-value">' + relatedValue + '</span></button></li>';
+            var inviteeView = '<!-- enabled --><li class="invitees_item"><button class="invitee_btn" data-invitee-id="' + id + '" data-id="' + moduleId + '" data-module="' + module + '" onclick="Reminders.onInviteeClick(this);"><img src=index.php?entryPoint=getImage&themeName=SuiteR&imageName=' + module + '.gif><span class="related-value">' + relatedValue + '</span></button></li>';
         }
         else {
-            var inviteeView = '<!-- disabled --><li class="invitees_item"><button class="invitee_btn" data-invitee-id="' + id + '" data-id="' + moduleId + '" data-module="' + module + '" disabled="disabled"><img src=index.php?entryPoint=getImage&themeName=SuiteR&imageName=' + module + '.gif"><span class="related-value">' + relatedValue + '</span></button></li>';
+            var inviteeView = '<!-- disabled --><li class="invitees_item"><button class="invitee_btn" data-invitee-id="' + id + '" data-id="' + moduleId + '" data-module="' + module + '" disabled="disabled"><img src=index.php?entryPoint=getImage&themeName=SuiteR&imageName=' + module + '.gif><span class="related-value">' + relatedValue + '</span></button></li>';
         }
         return inviteeView;
     },
 
     addAllInvitees: function(e) {
         var inviteesList = '';
+        var alreadyInvited = new Array();
+
+        // add all default invitees
+        $.each(Reminders.defaultInvitees, function(i,e){
+            var dataModule = e.personModule;
+            var dataId = e.personModuleId;
+            var relatedValue = e.personName;
+
+            // Fix for issue #1161: dont add duplicate invitees
+            var associativeArray = new Array();
+            associativeArray['dataModule'] = dataModule;
+            associativeArray['dataId'] = dataId;
+            associativeArray['relatedValue'] = relatedValue;
+            alreadyInvited.push(associativeArray);
+
+            inviteesList += Reminders.getInviteeView(false, dataModule, dataId, relatedValue);
+        });
+
         // this function need a scheduler table!
         $('table#schedulerTable tr.schedulerAttendeeRow').each(function(i,e){
             var dataModule = $(e).attr('data-module');
             var dataId = $(e).attr('data-id');
             var relatedValue = $(e).find('td[scope="row"]').first().text();
-            inviteesList += Reminders.getInviteeView(false, dataModule, dataId, relatedValue);
+
+            // Fix for issue #1161: dont add duplicate invitees
+            var result = new Array();
+            for( var i = 0, len = alreadyInvited.length; i < len; i++ ) {
+                if(alreadyInvited[i]['dataModule'] === dataModule) {
+                    if(alreadyInvited[i]['dataId'] === dataId) {
+                        if(alreadyInvited[i]['relatedValue'].trim() === relatedValue.trim()) {
+                            result = alreadyInvited[i];
+                            break;
+                        }
+                    }
+                }
+            }
+            if(typeof result.dataModule == 'undefined') {
+                inviteesList += Reminders.getInviteeView(false, dataModule, dataId, relatedValue);
+            }
+            
         });
         $(e).find('.invitees_list').first().html(inviteesList);
     },
@@ -178,6 +214,7 @@ var Reminders = {
         var reminders = [];
         $('#reminder_view .reminder_item').each(function (i, e) {
             reminders.push({
+                idx: i,
                 id: $(e).attr('data-reminder-id'),
                 popup: $(e).find('.popup_chkbox').prop('checked'),
                 email: $(e).find('.email_chkbox').prop('checked'),
@@ -193,12 +230,37 @@ var Reminders = {
         // do not create post data if disabled and/or it is not an EditView!
         if(!Reminders.disabled) {
             var reminders = Reminders.getRemindersData();
-            document.EditView.reminders_data.value = JSON.stringify(reminders);
-            Reminders.isValid('EditView', 'reminders_data');
+            //document.EditView.reminders_data.value = JSON.stringify(reminders);
+            document.getElementById('reminders_data').value = JSON.stringify(reminders);
+            //Reminders.isValid('EditView', 'reminders_data');
+            Reminders.isValid('reminders_data');
         }
     },
 
-    init: function(data, defaultValues, disabled) {
+    loadDefaultsAndInit: function(data, defaultValues, disabled, eventModule, defaultInvitees, returnAction) {
+        var _data = data;
+        var _defaultValues = defaultValues;
+        var _disabled = disabled;
+        var _eventModule = eventModule;
+        var _returnAction = returnAction;
+        $.getJSON('index.php?module=Reminders&action=getInviteesPersonName', {invitees: defaultInvitees}, function(resp){
+            var _defaultInvitees = resp;
+            if(!_defaultValues) {
+                $.getJSON('index.php?module=Reminders&action=getUserPreferencesForReminders', function(resp) {
+                    _defaultValues = resp;
+                    Reminders.init(_data, _defaultValues, _disabled, _eventModule, _defaultInvitees, _returnAction);
+                });
+            }
+            else {
+                Reminders.init(_data, _defaultValues, _disabled, _eventModule, _defaultInvitees, _returnAction);
+            }
+        });
+    },
+
+    init: function(data, defaultValues, disabled, eventModule, defaultInvitees, returnAction) {
+
+        Reminders.initViaData(eventModule, defaultInvitees, returnAction);
+
         Reminders.disabled = disabled ? true : false;
         if(data) {
             $.each(data, function(i,e){
@@ -215,13 +277,14 @@ var Reminders = {
         if(!Reminders.disabled) {
             // add validations on edit view
             addToValidateCallback('EditView', 'reminders_data', 'function', false, SUGAR.language.get('app_strings', 'ERR_A_REMINDER_IS_EMPTY_OR_INCORRECT'), function (formname, nameIndex) {
-                return Reminders.isValid(formname, nameIndex);
+                //return Reminders.isValid(formname, nameIndex);
+                return Reminders.isValid(nameIndex);
             });
             // add one reminder by default into the edit view if we don't have any reminders BUT we checked any remainders in user preferences!
             if(Reminders.getRemindersData().length == 0 && (Reminders.getBool(Reminders.defaultValues.popup) || Reminders.getBool(Reminders.defaultValues.email))) {
                 Reminders.addDefaultReminderInterval = setInterval(function () {
                     // we have to wait for the scheduler table loaded
-                    if ($('#schedulerTable .schedulerAttendeeRow').length > 0) {
+                    if ($('#schedulerTable').length == 0 || $('#schedulerTable .schedulerAttendeeRow').length > 0) {
                         clearInterval(Reminders.addDefaultReminderInterval);
                         Reminders.addReminder(null, Reminders.defaultValues.popup, Reminders.defaultValues.email, Reminders.defaultValues.timer_popup, Reminders.defaultValues.timer_email);
                         Reminders.createRemindersPostData();
@@ -230,6 +293,10 @@ var Reminders = {
             }
         }
 
+    },
+
+    initViaData: function(eventModule, defaultInvitees, returnAction) {
+        Reminders.defaultInvitees = defaultInvitees;
     },
 
     onPopupChkboxClick: function(e) {
@@ -248,16 +315,18 @@ var Reminders = {
         Reminders.createRemindersPostData();
     },
 
-    isValid:function (formname, nameIndex) {
+    //isValid:function (formname, nameIndex) {
+    isValid:function (nameIndex) {
         Reminders.clearErrors();
         try {
-            var remindersData = JSON.parse(document[formname][nameIndex].value);
+            //var remindersData = JSON.parse(document[formname][nameIndex].value);
+            var remindersData = JSON.parse(document.getElementById(nameIndex).value);
             $.each(remindersData, function(i,e){
                 if(!e.popup && !e.email) {
-                    Reminders.addError(e.id, SUGAR.language.get('app_strings', 'ERR_REMINDER_IS_NOT_SET_POPUP_OR_EMAIL'));
+                    Reminders.addError(e, SUGAR.language.get('app_strings', 'ERR_REMINDER_IS_NOT_SET_POPUP_OR_EMAIL'));
                 }
                 if(e.invitees.length == 0) {
-                    Reminders.addError(e.id, SUGAR.language.get('app_strings', 'ERR_NO_INVITEES_FOR_REMINDER'));
+                    Reminders.addError(e, SUGAR.language.get('app_strings', 'ERR_NO_INVITEES_FOR_REMINDER'));
                 }
             });
         }
@@ -274,8 +343,8 @@ var Reminders = {
         Reminders.errors = [];
     },
 
-    addError: function(id, msg) {
-        Reminders.errors.push({'id':id, 'msg':msg});
+    addError: function(elem, msg) {
+        Reminders.errors.push({'elem':elem, 'msg':msg});
     },
 
     getErrors: function() {
@@ -288,7 +357,7 @@ var Reminders = {
         $.each(Reminders.getErrors(), function(i,err){
             var _err = err;
             $('.reminder_item').each(function(i,elem){
-                if($(elem).attr('data-reminder-id')==_err.id) {
+                if( (_err.elem.id && $(elem).attr('data-reminder-id')==_err.elem.id) || (_err.elem.idx==i) ) {
                     $(elem).find('.error-msg').html(_err.msg);
                     $(elem).addClass('reminder-error');
                 }

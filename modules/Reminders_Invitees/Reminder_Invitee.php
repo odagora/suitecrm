@@ -56,20 +56,9 @@ class Reminder_Invitee extends Basic {
     var $related_invitee_module;
     var $related_invitee_module_id;
 
-    public function __construct() {
-        parent::Basic();
-    }
-
-    public function bean_implements($interface){
-        switch($interface){
-            case 'ACL': return true;
-        }
-        return false;
-    }
-
 	/**
 	 * Save multiple reminders invitees data.
-	 * 
+	 *
 	 * @param string $reminderId Related Reminder GUID
 	 * @param array $inviteesData Invitees Data
 	 */
@@ -97,21 +86,21 @@ class Reminder_Invitee extends Basic {
         }
         self::deleteRemindersInviteesMultiple($reminderId, $savedInviteeIds);
     }
-	
+
 	/**
 	 * Load reminders invitees data.
-	 * 
+	 *
 	 * @param string $reminderId Related Reminder GUID
 	 * @return array Invitees data
 	 */
-	public static function loadRemindersInviteesData($reminderId) {
+	public static function loadRemindersInviteesData($reminderId, $isDuplicate = false) {
 		$ret = array();
 		$reminderInviteeBeen = new Reminder_Invitee();
 		$reminderInvitees = $reminderInviteeBeen->get_full_list("reminders_invitees.date_entered", "reminders_invitees.reminder_id = '$reminderId'");
         if($reminderInvitees) {
             foreach ($reminderInvitees as $reminderInvitee) {
                 $ret[] = array(
-                    'id' => $reminderInvitee->id,
+                    'id' => $isDuplicate ? null : $reminderInvitee->id,
                     'module' => $reminderInvitee->related_invitee_module,
                     'module_id' => $reminderInvitee->related_invitee_module_id,
                     'value' => self::getInviteeName($reminderInvitee->related_invitee_module, $reminderInvitee->related_invitee_module_id),
@@ -149,7 +138,7 @@ class Reminder_Invitee extends Basic {
 
 	/**
 	 * Delete reminders invitees multiple.
-	 * 
+	 *
 	 * @param string $reminderId Related Reminder GUID
 	 * @param array $inviteeIds (optional) Exluded Invitees GUIDs, the invitee will not deleted if this argument contains that. Default is empty array.
 	 */

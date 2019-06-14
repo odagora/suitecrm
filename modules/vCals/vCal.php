@@ -69,12 +69,27 @@ class vCal extends SugarBean {
     const TAB = "\t";
     const CHARSPERLINE = 75;
 
-	function vCal()
+    public function __construct()
 	{
 
-		parent::SugarBean();
+		parent::__construct();
 		$this->disable_row_level_security = true;
 	}
+
+    /**
+     * @deprecated deprecated since version 7.6, PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code, use __construct instead
+     */
+    public function vCal(){
+        $deprecatedMessage = 'PHP4 Style Constructors are deprecated and will be remove in 7.8, please update your code';
+        if(isset($GLOBALS['log'])) {
+            $GLOBALS['log']->deprecated($deprecatedMessage);
+        }
+        else {
+            trigger_error($deprecatedMessage, E_USER_DEPRECATED);
+        }
+        self::__construct();
+    }
+
 
 	function get_summary_text()
 	{
@@ -221,14 +236,14 @@ class vCal extends SugarBean {
 
 	// static function:
         // cache vcals
-        function cache_sugar_vcal(&$user_focus)
+        static function cache_sugar_vcal(&$user_focus)
         {
             self::cache_sugar_vcal_freebusy($user_focus);
         }
 
 	// static function:
         // caches vcal for Activities in Sugar database
-        function cache_sugar_vcal_freebusy(&$user_focus)
+        static function cache_sugar_vcal_freebusy(&$user_focus)
         {
             $focus = new vCal();
             // set freebusy members and save
