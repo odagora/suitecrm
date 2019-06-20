@@ -34,23 +34,18 @@ $dbname = $data['crm_db_config']['dbname'];
 
 //Launch backup via command
 if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)){    
-    exec("mysqldump -u $dbuser -p$dbpass $dbname | gzip > db_backup.sql.gz");
+    exec("mysqldump -u $dbuser -p$dbpass $dbname db_backup.sql");
 }
 else {
     exec('C:\xampp\mysql\bin\mysqldump -u '.$dbuser.' -p'.$dbpass.' '.$dbname.' > db_backup.sql');
 }
 
 // //Prepare file for upload
-if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)){
-    $dropboxFile = new DropboxFile(__DIR__ . "/db_backup.sql.gz");
-}
-else {
-    $dropboxFile = new DropboxFile(__DIR__ . "/db_backup.sql");
-}
+$dropboxFile = new DropboxFile(__DIR__ . "/db_backup.sql");
 $dt = (new DateTime()) -> format("Y-m-d_H-i_s");
 
 try{
-    $file = $dropbox->upload($dropboxFile, "/backups/bcp".$dt, ['autorename' => true]);
+    $file = $dropbox->upload($dropboxFile, "/backups/bcp".$dt.".sql", ['autorename' => true]);
     echo $file->getName();
 }catch(Exception $e){
     echo $e;

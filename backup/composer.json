@@ -1,5 +1,11 @@
 {
     "require": {
-        "kunalvarma05/dropbox-php-sdk": "^0.2.1"
-    }
+        "kunalvarma05/dropbox-php-sdk": "dev-master"
+    },
+    "repositories": [
+        {
+        "type": "vcs",
+        "url": "git@github.com:ogonzalez29/dropbox-php-sdk.git"
+        }
+    ]
 }
