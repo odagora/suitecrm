@@ -609,6 +609,7 @@ class Meeting extends SugarBean {
 							'/index.php?entryPoint=acceptDecline&module=Meetings&user_id='.$meeting->current_notify_user->id.'&record='.$meeting->id);
 		}
 		$xtpl->assign("MEETING_TO", $meeting->current_notify_user->new_assigned_user_name);
+		$xtpl->assign("RELATED_TO", $meeting->parent_name);
 		$xtpl->assign("MEETING_SUBJECT", trim($meeting->name));
 		$xtpl->assign("MEETING_STATUS",(isset($meeting->status)? $app_list_strings['meeting_status_dom'][$meeting->status]:""));
 		$typekey = strtolower($meeting->type);
